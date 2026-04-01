@@ -18,37 +18,42 @@ body {
   width: 100%;
   max-width: 380px;
   background: white;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 18px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 
 /* TYPE COLORS */
-.adult { border-top: 6px solid #e63946; }
-.kid { border-top: 6px solid #3a86ff; }
-.elder { border-top: 6px solid #2a9d8f; }
+.adult { border-top: 8px solid #e63946; }
+.kid { border-top: 8px solid #3a86ff; }
+.elder { border-top: 8px solid #2a9d8f; }
 
 .name {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.6rem;
+  font-weight: 800;
+  text-align: center;
 }
 
 .blood {
-  display: inline-block;
+  display: block;
+  text-align: center;
   background: #e63946;
   color: white;
-  padding: 5px 10px;
-  border-radius: 20px;
-  margin: 8px 0;
+  padding: 8px;
+  border-radius: 10px;
+  margin: 12px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
 .section {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .label {
   font-size: 0.7rem;
-  color: gray;
+  color: #777;
+  text-transform: uppercase;
 }
 
 .value {
@@ -57,22 +62,25 @@ body {
 }
 
 .alert {
-  background: #ffe5e5;
-  border: 1px solid #e63946;
-  padding: 8px;
+  background: #fff0f0;
+  border-left: 5px solid #e63946;
+  padding: 10px;
   border-radius: 6px;
+  font-weight: bold;
+  color: #b00020;
   margin-top: 4px;
 }
 
 .call {
   display: block;
-  margin-top: 15px;
+  margin-top: 18px;
   background: #e63946;
   color: white;
   text-align: center;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 18px;
+  border-radius: 12px;
   text-decoration: none;
+  font-size: 1.2rem;
   font-weight: bold;
 }
 </style>
@@ -83,7 +91,7 @@ body {
 <div id="app">Cargando ficha médica...</div>
 
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS-nmeuwJ7Bf_RmwNAUi8FZTPwvJO6Pw6Z8J9WmSApQG2Slf5LhE4V03yy2-0mjuIbnJMva3oH_T29T/pub?output=csv";
+const sheetURL = "PASTE_YOUR_CSV_LINK_HERE";
 
 const params = new URLSearchParams(window.location.search);
 const userId = params.get("id");
@@ -118,23 +126,42 @@ fetch(sheetURL)
   });
 
 function render(u) {
+  let extra = "";
+
+  // PRO + PREMIUM
+  if (u.plan === "pro" || u.plan === "premium") {
+    extra += `
+      <div class="section">
+        <div class="label">Condición</div>
+        <div class="alert">${u.condition || "No especificado"}</div>
+      </div>
+
+      <div class="section">
+        <div class="label">Alergias</div>
+        <div class="alert">${u.allergy || "Ninguna"}</div>
+      </div>
+    `;
+  }
+
+  // PREMIUM ONLY
+  if (u.plan === "premium") {
+    extra += `
+      <div class="section">
+        <div class="label">Notas críticas</div>
+        <div class="alert">${u.notes || "Sin notas"}</div>
+      </div>
+    `;
+  }
+
   document.getElementById("app").innerHTML = `
     <div class="card ${u.type}">
       <div class="name">${u.name}</div>
       <div class="blood">${u.blood}</div>
 
-      <div class="section">
-        <div class="label">Condición</div>
-        <div class="alert">${u.condition}</div>
-      </div>
+      ${extra}
 
       <div class="section">
-        <div class="label">Alergias</div>
-        <div class="alert">${u.allergy}</div>
-      </div>
-
-      <div class="section">
-        <div class="label">Contacto</div>
+        <div class="label">Contacto de emergencia</div>
         <div class="value">${u.contact}</div>
       </div>
 
