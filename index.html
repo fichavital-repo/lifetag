@@ -1,1 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* TYPE COLORS */
+.adult { border-top: 6px solid #e63946; }
+.kid { border-top: 6px solid #3a86ff; }
+.elder { border-top: 6px solid #2a9d8f; }
+
+.name {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.blood {
+  display: inline-block;
+  background: #e63946;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  margin: 8px 0;
+}
+
+.section {
+  margin-top: 10px;
+}
+
+.label {
+  font-size: 0.7rem;
+  color: gray;
+}
+
+.value {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.alert {
+  background: #ffe5e5;
+  border: 1px solid #e63946;
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.call {
+  display: block;
+  margin-top: 15px;
+  background: #e63946;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">Cargando ficha médica...</div>
+
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS-nmeuwJ7Bf_RmwNAUi8FZTPwvJO6Pw6Z8J9WmSApQG2Slf5LhE4V03yy2-0mjuIbnJMva3oH_T29T/pub?output=csv";
+
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("id");
+
+if (!userId) {
+  document.getElementById("app").innerHTML = "ID no proporcionado";
+}
+
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(csv => {
+    const rows = csv.trim().split("\n").map(r => r.split(","));
+    const headers = rows[0].map(h => h.trim());
+
+    const data = rows.slice(1).map(row => {
+      let obj = {};
+      headers.forEach((h, i) => obj[h] = (row[i] || "").trim());
+      return obj;
+    });
+
+    const user = data.find(u => u.id === userId);
+
+    if (!user) {
+      document.getElementById("app").innerHTML = "Usuario no encontrado";
+      return;
+    }
+
+    render(user);
+  })
+  .catch(() => {
+    document.getElementById("app").innerHTML = "Error cargando datos";
+  });
+
+function render(u) {
+  document.getElementById("app").innerHTML = `
+    <div class="card ${u.type}">
+      <div class="name">${u.name}</div>
+      <div class="blood">${u.blood}</div>
+
+      <div class="section">
+        <div class="label">Condición</div>
+        <div class="alert">${u.condition}</div>
+      </div>
+
+      <div class="section">
+        <div class="label">Alergias</div>
+        <div class="alert">${u.allergy}</div>
+      </div>
+
+      <div class="section">
+        <div class="label">Contacto</div>
+        <div class="value">${u.contact}</div>
+      </div>
+
+      <a href="tel:${u.phone}" class="call">📞 Llamar</a>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
