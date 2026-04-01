@@ -100,17 +100,34 @@ if (!userId) {
   document.getElementById("app").innerHTML = "ID no proporcionado";
 }
 
+// Detect comma OR tab automatically
+function parseCSV(text) {
+  const lines = text.trim().split("\n");
+
+  // Detect separator from first line
+  const separator = lines[0].includes("\t") ? "\t" : ",";
+
+  const rows = lines.map(line => line.split(separator));
+
+  const headers = rows[0].map(h => h.trim().toLowerCase());
+
+  const data = rows.slice(1).map(row => {
+    let obj = {};
+    headers.forEach((h, i) => {
+      obj[h] = (row[i] || "").trim();
+    });
+    return obj;
+  });
+
+  return data;
+}
+
 fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
-    const rows = csv.trim().split("\n").map(r => r.split(","));
-    const headers = rows[0].map(h => h.trim());
+    const data = parseCSV(csv);
 
-    const data = rows.slice(1).map(row => {
-      let obj = {};
-      headers.forEach((h, i) => obj[h] = (row[i] || "").trim());
-      return obj;
-    });
+    console.log("DATA:", data); // Debug (remove later)
 
     const user = data.find(u => u.id === userId);
 
@@ -121,7 +138,8 @@ fetch(sheetURL)
 
     render(user);
   })
-  .catch(() => {
+  .catch(err => {
+    console.error(err);
     document.getElementById("app").innerHTML = "Error cargando datos";
   });
 
@@ -154,18 +172,18 @@ function render(u) {
   }
 
   document.getElementById("app").innerHTML = `
-    <div class="card ${u.type}">
-      <div class="name">${u.name}</div>
-      <div class="blood">${u.blood}</div>
+    <div class="card ${u.type || "adult"}">
+      <div class="name">${u.name || "Sin nombre"}</div>
+      <div class="blood">${u.blood || "N/A"}</div>
 
       ${extra}
 
       <div class="section">
         <div class="label">Contacto de emergencia</div>
-        <div class="value">${u.contact}</div>
+        <div class="value">${u.contact || "No disponible"}</div>
       </div>
 
-      <a href="tel:${u.phone}" class="call">📞 Llamar</a>
+      <a href="tel:${u.phone || ""}" class="call">📞 Llamar</a>
     </div>
   `;
 }
