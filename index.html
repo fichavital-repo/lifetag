@@ -1,86 +1,41 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
-  display: flex;
-  justify-content: center;
+  font-family: Arial;
+  background: #f5f5f5;
   padding: 10px;
 }
 
-.card {
-  width: 100%;
-  max-width: 380px;
+.container {
+  max-width: 400px;
+  margin: auto;
   background: white;
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-}
-
-/* TYPE COLORS */
-.adult { border-top: 8px solid #e63946; }
-.kid { border-top: 8px solid #3a86ff; }
-.elder { border-top: 8px solid #2a9d8f; }
-
-.name {
-  font-size: 1.6rem;
-  font-weight: 800;
-  text-align: center;
-}
-
-.blood {
-  display: block;
-  text-align: center;
-  background: #e63946;
-  color: white;
-  padding: 8px;
-  border-radius: 10px;
-  margin: 12px 0;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.section {
-  margin-top: 12px;
-}
-
-.label {
-  font-size: 0.7rem;
-  color: #777;
-  text-transform: uppercase;
-}
-
-.value {
-  font-size: 1.1rem;
-  font-weight: bold;
-}
-
-.alert {
-  background: #fff0f0;
-  border-left: 5px solid #e63946;
-  padding: 10px;
-  border-radius: 6px;
-  font-weight: bold;
-  color: #b00020;
-  margin-top: 4px;
-}
-
-.call {
-  display: block;
-  margin-top: 18px;
-  background: #e63946;
-  color: white;
-  text-align: center;
-  padding: 18px;
   border-radius: 12px;
-  text-decoration: none;
-  font-size: 1.2rem;
+  padding: 15px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.category {
+  margin-top: 15px;
+  font-weight: bold;
+  color: #e63946;
+}
+
+.item {
+  margin-top: 8px;
+}
+
+.price {
+  float: right;
   font-weight: bold;
 }
 </style>
@@ -88,104 +43,64 @@ body {
 
 <body>
 
-<div id="app">Cargando ficha médica...</div>
+<div id="app">Cargando menú...</div>
 
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS-nmeuwJ7Bf_RmwNAUi8FZTPwvJO6Pw6Z8J9WmSApQG2Slf5LhE4V03yy2-0mjuIbnJMva3oH_T29T/pub?output=csv";
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb39SKlhevlPEU-AAI6bcPdjRXsxRQrMRHp8AsLOUJ2hCh3fJkNFddg8C8tkbDgWTBFoZrh_VJjkX3/pub?output=csv";
 
 const params = new URLSearchParams(window.location.search);
-const userId = params.get("id");
+const id = params.get("id");
 
-if (!userId) {
-  document.getElementById("app").innerHTML = "ID no proporcionado";
-}
-
-// Detect comma OR tab automatically
 function parseCSV(text) {
   const lines = text.trim().split("\n");
-
-  // Detect separator from first line
-  const separator = lines[0].includes("\t") ? "\t" : ",";
-
-  const rows = lines.map(line => line.split(separator));
-
+  const sep = lines[0].includes("\t") ? "\t" : ",";
+  const rows = lines.map(l => l.split(sep));
   const headers = rows[0].map(h => h.trim().toLowerCase());
 
-  const data = rows.slice(1).map(row => {
+  return rows.slice(1).map(row => {
     let obj = {};
-    headers.forEach((h, i) => {
-      obj[h] = (row[i] || "").trim();
-    });
+    headers.forEach((h,i) => obj[h] = (row[i] || "").trim());
     return obj;
   });
-
-  return data;
 }
 
 fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
     const data = parseCSV(csv);
+    const items = data.filter(r => r.id === id);
 
-    console.log("DATA:", data); // Debug (remove later)
-
-    const user = data.find(u => u.id === userId);
-
-    if (!user) {
-      document.getElementById("app").innerHTML = "Usuario no encontrado";
+    if (!items.length) {
+      document.getElementById("app").innerHTML = "Menú no encontrado";
       return;
     }
 
-    render(user);
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("app").innerHTML = "Error cargando datos";
+    render(items);
   });
 
-function render(u) {
-  let extra = "";
+function render(items) {
+  let html = `<div class="container">`;
+  html += `<div class="title">${items[0].name}</div>`;
 
-  // PRO + PREMIUM
-  if (u.plan === "pro" || u.plan === "premium") {
-    extra += `
-      <div class="section">
-        <div class="label">Condición</div>
-        <div class="alert">${u.condition || "No especificado"}</div>
-      </div>
+  let currentCategory = "";
 
-      <div class="section">
-        <div class="label">Alergias</div>
-        <div class="alert">${u.allergy || "Ninguna"}</div>
-      </div>
-    `;
-  }
+  items.forEach(i => {
+    if (i.category !== currentCategory) {
+      currentCategory = i.category;
+      html += `<div class="category">${currentCategory}</div>`;
+    }
 
-  // PREMIUM ONLY
-  if (u.plan === "premium") {
-    extra += `
-      <div class="section">
-        <div class="label">Notas críticas</div>
-        <div class="alert">${u.notes || "Sin notas"}</div>
+    html += `
+      <div class="item">
+        ${i.item}
+        <span class="price">$${i.price}</span><br>
+        <small>${i.description}</small>
       </div>
     `;
-  }
+  });
 
-  document.getElementById("app").innerHTML = `
-    <div class="card ${u.type || "adult"}">
-      <div class="name">${u.name || "Sin nombre"}</div>
-      <div class="blood">${u.blood || "N/A"}</div>
-
-      ${extra}
-
-      <div class="section">
-        <div class="label">Contacto de emergencia</div>
-        <div class="value">${u.contact || "No disponible"}</div>
-      </div>
-
-      <a href="tel:${u.phone || ""}" class="call">📞 Llamar</a>
-    </div>
-  `;
+  html += `</div>`;
+  document.getElementById("app").innerHTML = html;
 }
 </script>
 
