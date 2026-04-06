@@ -4,40 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Menú</title>
+
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f4f4;
+}
+
+/* HEADER */
+.header {
+  position: sticky;
+  top: 0;
+  background: #e63946;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  z-index: 10;
+}
+
+/* CATEGORY TABS */
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab {
+  padding: 12px 15px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #555;
+  transition: 0.3s;
+}
+
+.tab.active {
+  color: #e63946;
+  border-bottom: 3px solid #e63946;
+}
+
+/* CONTENT */
+.container {
   padding: 10px;
 }
 
-.container {
-  max-width: 400px;
-  margin: auto;
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.title {
-  font-size: 1.6rem;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
 .category {
-  margin-top: 15px;
+  margin-top: 20px;
   font-weight: bold;
   color: #e63946;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 .item {
+  background: white;
   margin-top: 10px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #eee;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  animation: fadeIn 0.3s ease;
 }
 
 .price {
@@ -47,14 +76,41 @@ body {
 
 .desc {
   font-size: 0.85rem;
-  color: #666;
+  color: #777;
+}
+
+/* BUTTON */
+.order-btn {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #25D366;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(5px);}
+  to {opacity: 1; transform: translateY(0);}
 }
 </style>
 </head>
 
 <body>
 
-<div id="app">Cargando menú...</div>
+<div class="header" id="title">Cargando...</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="container" id="menu"></div>
+
+<a id="orderBtn" class="order-btn" href="#">📲 Pedir por WhatsApp</a>
 
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb39SKlhevlPEU-AAI6bcPdjRXsxRQrMRHp8AsLOUJ2hCh3fJkNFddg8C8tkbDgWTBFoZrh_VJjkX3/pub?output=csv";
@@ -62,25 +118,15 @@ const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb39SKlhevlPE
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-if (!id) {
-  document.getElementById("app").innerHTML = "Falta ID en la URL";
-}
-
-// 🔥 ROBUST CSV PARSER
 function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/); // handles Windows + Unix
-
-  const separator = lines[0].includes("\t") ? "\t" : ",";
-
-  const rows = lines.map(line => line.split(separator));
-
+  const lines = text.trim().split(/\r?\n/);
+  const sep = lines[0].includes("\t") ? "\t" : ",";
+  const rows = lines.map(l => l.split(sep));
   const headers = rows[0].map(h => h.trim().toLowerCase());
 
   return rows.slice(1).map(row => {
     let obj = {};
-    headers.forEach((h, i) => {
-      obj[h] = (row[i] || "").trim();
-    });
+    headers.forEach((h,i) => obj[h] = (row[i] || "").trim());
     return obj;
   });
 }
@@ -89,47 +135,60 @@ fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
     const data = parseCSV(csv);
-
-    console.log("DATA:", data); // debug (remove later)
-
-    // 🔥 FIX: trim comparison
-    const items = data.filter(r => r.id && r.id.trim() === id.trim());
+    const items = data.filter(r => r.id && r.id.trim() === id);
 
     if (!items.length) {
-      document.getElementById("app").innerHTML = "Menú no encontrado (revisa ID)";
+      document.body.innerHTML = "Menú no encontrado";
       return;
     }
 
     render(items);
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("app").innerHTML = "Error cargando datos";
   });
 
 function render(items) {
-  let html = `<div class="container">`;
-  html += `<div class="title">${items[0].name || "Menú"}</div>`;
+  document.getElementById("title").innerText = items[0].name;
 
-  let currentCategory = "";
+  // Categories
+  const categories = [...new Set(items.map(i => i.category))];
 
-  items.forEach(i => {
-    if (i.category !== currentCategory) {
-      currentCategory = i.category;
-      html += `<div class="category">${currentCategory}</div>`;
-    }
-
-    html += `
-      <div class="item">
-        ${i.item || ""}
-        <span class="price">$${i.price || ""}</span><br>
-        <span class="desc">${i.description || ""}</span>
-      </div>
-    `;
+  const tabs = document.getElementById("tabs");
+  categories.forEach((cat, index) => {
+    const tab = document.createElement("div");
+    tab.className = "tab" + (index === 0 ? " active" : "");
+    tab.innerText = cat;
+    tab.onclick = () => showCategory(cat, tab);
+    tabs.appendChild(tab);
   });
 
-  html += `</div>`;
-  document.getElementById("app").innerHTML = html;
+  showCategory(categories[0]);
+
+  // WhatsApp button (edit number)
+  document.getElementById("orderBtn").href = "https://wa.me/56912345678";
+}
+
+function showCategory(category, tabElement) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  if (tabElement) tabElement.classList.add("active");
+
+  const menu = document.getElementById("menu");
+  menu.innerHTML = "";
+
+  fetch(sheetURL)
+    .then(res => res.text())
+    .then(csv => {
+      const data = parseCSV(csv);
+      const items = data.filter(r => r.id && r.id.trim() === id && r.category === category);
+
+      items.forEach(i => {
+        menu.innerHTML += `
+          <div class="item">
+            ${i.item}
+            <span class="price">$${i.price}</span><br>
+            <div class="desc">${i.description}</div>
+          </div>
+        `;
+      });
+    });
 }
 </script>
 
