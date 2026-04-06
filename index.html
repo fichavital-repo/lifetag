@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: #f5f5f5;
   padding: 10px;
 }
@@ -16,27 +17,37 @@ body {
   background: white;
   border-radius: 12px;
   padding: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: bold;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 .category {
   margin-top: 15px;
   font-weight: bold;
   color: #e63946;
+  font-size: 1.1rem;
 }
 
 .item {
-  margin-top: 8px;
+  margin-top: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
 }
 
 .price {
   float: right;
   font-weight: bold;
+}
+
+.desc {
+  font-size: 0.85rem;
+  color: #666;
 }
 </style>
 </head>
@@ -51,15 +62,25 @@ const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb39SKlhevlPE
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+if (!id) {
+  document.getElementById("app").innerHTML = "Falta ID en la URL";
+}
+
+// 🔥 ROBUST CSV PARSER
 function parseCSV(text) {
-  const lines = text.trim().split("\n");
-  const sep = lines[0].includes("\t") ? "\t" : ",";
-  const rows = lines.map(l => l.split(sep));
+  const lines = text.trim().split(/\r?\n/); // handles Windows + Unix
+
+  const separator = lines[0].includes("\t") ? "\t" : ",";
+
+  const rows = lines.map(line => line.split(separator));
+
   const headers = rows[0].map(h => h.trim().toLowerCase());
 
   return rows.slice(1).map(row => {
     let obj = {};
-    headers.forEach((h,i) => obj[h] = (row[i] || "").trim());
+    headers.forEach((h, i) => {
+      obj[h] = (row[i] || "").trim();
+    });
     return obj;
   });
 }
@@ -68,19 +89,27 @@ fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
     const data = parseCSV(csv);
-    const items = data.filter(r => r.id === id);
+
+    console.log("DATA:", data); // debug (remove later)
+
+    // 🔥 FIX: trim comparison
+    const items = data.filter(r => r.id && r.id.trim() === id.trim());
 
     if (!items.length) {
-      document.getElementById("app").innerHTML = "Menú no encontrado";
+      document.getElementById("app").innerHTML = "Menú no encontrado (revisa ID)";
       return;
     }
 
     render(items);
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById("app").innerHTML = "Error cargando datos";
   });
 
 function render(items) {
   let html = `<div class="container">`;
-  html += `<div class="title">${items[0].name}</div>`;
+  html += `<div class="title">${items[0].name || "Menú"}</div>`;
 
   let currentCategory = "";
 
@@ -92,9 +121,9 @@ function render(items) {
 
     html += `
       <div class="item">
-        ${i.item}
-        <span class="price">$${i.price}</span><br>
-        <small>${i.description}</small>
+        ${i.item || ""}
+        <span class="price">$${i.price || ""}</span><br>
+        <span class="desc">${i.description || ""}</span>
       </div>
     `;
   });
