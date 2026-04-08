@@ -126,29 +126,82 @@
     flex-grow: 1;
   }
 
-  .materials {
-    font-size: 0.85rem;
-    color: #555;
-    margin-bottom: 15px;
-    background: #f9f9f9;
-    padding: 8px;
-    border-radius: 6px;
-  }
-
   .btn-link {
-    display: inline-block;
+    display: block;
     text-align: center;
     background: var(--secondary);
     color: white;
-    text-decoration: none;
-    padding: 10px;
+    border: none;
+    padding: 12px;
     border-radius: 8px;
     font-weight: bold;
     margin-top: auto;
+    cursor: pointer;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .btn-link:hover {
     background: #e67e22;
+  }
+
+  /* VISTA DETALLADA */
+  #detailView {
+    display: none;
+    max-width: 800px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+
+  .back-btn {
+    background: #eee;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #555;
+  }
+
+  .back-btn:hover { background: #ddd; }
+
+  .detail-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    background: #f0f0f0;
+  }
+
+  .detail-section {
+    margin-bottom: 25px;
+  }
+
+  .detail-section h3 {
+    color: var(--primary);
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+  }
+
+  .detail-section p {
+    line-height: 1.6;
+    color: #444;
+    white-space: pre-wrap; /* Respeta los saltos de línea del excel */
+  }
+
+  .materials-box {
+    background: #fff3cd;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 5px solid #ffc107;
+    margin-bottom: 25px;
   }
 
   #loading {
@@ -165,21 +218,28 @@
   <h1>📚 Ideas y Actividades Párvulos</h1>
 </header>
 
-<div class="filters">
-  <input type="text" id="searchInput" placeholder="Buscar actividad..." oninput="filterData()">
-  <select id="themeFilter" onchange="filterData()">
-    <option value="">Todos los Temas</option>
-  </select>
-  <select id="ageFilter" onchange="filterData()">
-    <option value="">Todas las Edades</option>
-  </select>
-  <select id="skillFilter" onchange="filterData()">
-    <option value="">Todas las Habilidades</option>
-  </select>
+<div id="mainView">
+  <div class="filters">
+    <input type="text" id="searchInput" placeholder="Buscar actividad..." oninput="filterData()">
+    <select id="themeFilter" onchange="filterData()">
+      <option value="">Todos los Temas</option>
+    </select>
+    <select id="ageFilter" onchange="filterData()">
+      <option value="">Todas las Edades</option>
+    </select>
+    <select id="skillFilter" onchange="filterData()">
+      <option value="">Todas las Habilidades</option>
+    </select>
+  </div>
+
+  <div id="loading">Cargando actividades...</div>
+  <div id="activitiesGrid" class="container"></div>
 </div>
 
-<div id="loading">Cargando actividades...</div>
-<div id="activitiesGrid" class="container"></div>
+<div id="detailView">
+  <button class="back-btn" onclick="hideDetail()">⬅ Volver a las actividades</button>
+  <div id="detailContent"></div>
+</div>
 
 <script>
 // REEMPLAZA ESTA URL POR LA DE TU NUEVO GOOGLE SHEET PUBLICADO COMO CSV
@@ -189,15 +249,29 @@ let allActivities = [];
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
-  const sep = lines[0].includes("\t") ? "\t" : ",";
-  const rows = lines.map(l => l.split(sep));
-  const headers = rows[0].map(h => h.trim().toLowerCase());
+  // Detectar separador, manejar comillas en CSV básico
+  const rows = [];
+  for (let i = 0; i < lines.length; i++) {
+    // Regex para separar por comas respetando comillas
+    const row = lines[i].match(/(?:\"([^\"]*)\")|([^\,]+)/g); 
+    if(row) {
+        rows.push(row.map(cell => {
+            let clean = cell.trim();
+            if (clean.startsWith('"') && clean.endsWith('"')) {
+                clean = clean.slice(1, -1);
+            }
+            return clean;
+        }));
+    }
+  }
+
+  const headers = rows[0].map(h => h.toLowerCase());
 
   return rows.slice(1).map(row => {
     let obj = {};
     headers.forEach((h,i) => obj[h] = (row[i] || "").trim());
     return obj;
-  }).filter(item => item.title); // Ignorar filas vacías
+  }).filter(item => item.title);
 }
 
 fetch(sheetURL)
@@ -210,6 +284,7 @@ fetch(sheetURL)
   })
   .catch(err => {
     document.getElementById("loading").innerText = "Error cargando la base de datos.";
+    console.error(err);
   });
 
 function populateFilters() {
@@ -221,7 +296,6 @@ function populateFilters() {
     if (act.theme) themes.add(act.theme);
     if (act.age) ages.add(act.age);
     if (act.skills) {
-      // Separa habilidades si vienen separadas por comas
       act.skills.split(',').forEach(s => skills.add(s.trim()));
     }
   });
@@ -265,15 +339,12 @@ function renderActivities(data) {
   container.innerHTML = "";
 
   if (data.length === 0) {
-    container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>No se encontraron actividades con estos filtros.</p>";
+    container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>No se encontraron actividades.</p>";
     return;
   }
 
   data.forEach(act => {
-    const imgHtml = act.image ? `<img src="${act.image}" alt="${act.title}">` : '';
-    const linkHtml = act.link ? `<a href="${act.link}" target="_blank" class="btn-link">Ver material completo</a>` : '';
-    
-    // Convertir habilidades en etiquetas HTML
+    const imgHtml = act.image ? `<img src="${act.image}" alt="${act.title}" loading="lazy">` : '';
     const skillsHtml = act.skills ? act.skills.split(',').map(s => `<span class="tag skill">${s.trim()}</span>`).join('') : '';
 
     container.innerHTML += `
@@ -287,12 +358,56 @@ function renderActivities(data) {
             ${skillsHtml}
           </div>
           <div class="description">${act.description}</div>
-          ${act.materials ? `<div class="materials"><strong>Materiales:</strong> ${act.materials}</div>` : ''}
-          ${linkHtml}
+          <button class="btn-link" onclick="showDetail('${act.id}')">Ver material completo</button>
         </div>
       </div>
     `;
   });
+}
+
+// Lógica de Vistas (Single Page Application)
+function showDetail(id) {
+  const act = allActivities.find(a => a.id === id);
+  if (!act) return;
+
+  const detailContent = document.getElementById("detailContent");
+  
+  // Procesar saltos de línea y formateo si es necesario
+  const imgHtml = act.image ? `<img src="${act.image}" class="detail-image" alt="${act.title}">` : '';
+  const steps = act.steps ? act.steps : "Instrucciones no disponibles.";
+  const benefits = act.benefits ? act.benefits : "Beneficios no disponibles.";
+  
+  detailContent.innerHTML = `
+    ${imgHtml}
+    <h2 style="color: var(--primary); margin-top: 0;">${act.title}</h2>
+    
+    <div class="tags" style="margin-bottom: 20px;">
+      ${act.theme ? `<span class="tag">${act.theme}</span>` : ''}
+      ${act.age ? `<span class="tag age">${act.age}</span>` : ''}
+      ${act.skills ? act.skills.split(',').map(s => `<span class="tag skill">${s.trim()}</span>`).join('') : ''}
+    </div>
+
+    ${act.materials ? `<div class="materials-box"><strong>✂️ Materiales Necesarios:</strong><br>${act.materials}</div>` : ''}
+
+    <div class="detail-section">
+      <h3>📝 Instrucciones Paso a Paso</h3>
+      <p>${steps}</p>
+    </div>
+
+    <div class="detail-section">
+      <h3>🧠 ¿Por qué funciona esto? (Beneficios)</h3>
+      <p>${benefits}</p>
+    </div>
+  `;
+
+  document.getElementById("mainView").style.display = "none";
+  document.getElementById("detailView").style.display = "block";
+  window.scrollTo(0, 0); // Sube al inicio de la página
+}
+
+function hideDetail() {
+  document.getElementById("detailView").style.display = "none";
+  document.getElementById("mainView").style.display = "block";
 }
 </script>
 
