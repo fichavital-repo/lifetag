@@ -20,7 +20,6 @@
     color: var(--text);
   }
 
-  /* HEADER */
   header {
     background: var(--primary);
     color: white;
@@ -34,7 +33,6 @@
     font-size: 1.8rem;
   }
 
-  /* FILTERS */
   .filters {
     display: flex;
     flex-wrap: wrap;
@@ -55,7 +53,6 @@
     max-width: 200px;
   }
 
-  /* GRID DE ACTIVIDADES */
   .container {
     padding: 20px;
     display: grid;
@@ -119,7 +116,7 @@
 
   .tag.age { background: #fefcbf; color: #b7791f; }
   .tag.skill { background: #e6fffa; color: #285e61; }
-  .tag.festivity { background: #fed7e2; color: #97266d; } /* Color para festividades */
+  .tag.festivity { background: #fed7e2; color: #97266d; }
 
   .description {
     font-size: 0.9rem;
@@ -147,7 +144,6 @@
     background: #e67e22;
   }
 
-  /* VISTA DETALLADA */
   #detailView {
     display: none;
     max-width: 800px;
@@ -246,7 +242,6 @@
 </div>
 
 <script>
-// REEMPLAZA ESTA URL POR LA DE TU NUEVO GOOGLE SHEET PUBLICADO COMO CSV
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb39SKlhevlPEU-AAI6bcPdjRXsxRQrMRHp8AsLOUJ2hCh3fJkNFddg8C8tkbDgWTBFoZrh_VJjkX3/pub?output=csv";
 
 let allActivities = [];
@@ -279,7 +274,21 @@ function parseCSV(text) {
 fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
-    allActivities = parseCSV(csv);
+    const rawActivities = parseCSV(csv);
+    
+    // FILTRO ANTIDUPLICADOS: Elimina filas con el mismo ID
+    const uniqueActivities = [];
+    const seenIds = new Set();
+    
+    for (const act of rawActivities) {
+      if (!seenIds.has(act.id)) {
+        seenIds.add(act.id);
+        uniqueActivities.push(act);
+      }
+    }
+    
+    allActivities = uniqueActivities;
+    
     document.getElementById("loading").style.display = "none";
     populateFilters();
     renderActivities(allActivities);
@@ -335,8 +344,6 @@ function filterData() {
     const matchTheme = theme === "" || act.theme === theme;
     const matchAge = age === "" || act.age === age;
     const matchSkill = skill === "" || (act.skills && act.skills.includes(skill));
-    
-    // Lógica para festividades: si el filtro está vacío, muestra todas. Si tiene valor, debe coincidir.
     const matchFestivity = festivity === "" || act.festivity === festivity;
 
     return matchSearch && matchTheme && matchAge && matchSkill && matchFestivity;
@@ -399,32 +406,4 @@ function showDetail(id) {
       ${act.theme ? `<span class="tag">${act.theme}</span>` : ''}
       ${act.age ? `<span class="tag age">${act.age}</span>` : ''}
       ${festivityHtml}
-      ${act.skills ? act.skills.split(',').map(s => `<span class="tag skill">${s.trim()}</span>`).join('') : ''}
-    </div>
-
-    ${act.materials ? `<div class="materials-box"><strong>✂️ Materiales Necesarios:</strong><br>${act.materials}</div>` : ''}
-
-    <div class="detail-section">
-      <h3>📝 Instrucciones Paso a Paso</h3>
-      <p>${steps}</p>
-    </div>
-
-    <div class="detail-section">
-      <h3>🧠 ¿Por qué funciona esto? (Beneficios)</h3>
-      <p>${benefits}</p>
-    </div>
-  `;
-
-  document.getElementById("mainView").style.display = "none";
-  document.getElementById("detailView").style.display = "block";
-  window.scrollTo(0, 0);
-}
-
-function hideDetail() {
-  document.getElementById("detailView").style.display = "none";
-  document.getElementById("mainView").style.display = "block";
-}
-</script>
-
-</body>
-</html>
+      ${act.skills ? act.skills.split(',').map(s => `<span
