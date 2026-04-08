@@ -3,136 +3,190 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Restaurante</title>
-
+<title>Buscador de Actividades - Párvulos</title>
 <style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: #f4f4f4;
-}
+  :root {
+    --primary: #4A90E2;
+    --secondary: #F39C12;
+    --bg: #f4f7f6;
+    --card-bg: #ffffff;
+    --text: #333333;
+  }
 
-/* HERO */
-.hero {
-  height: 60vh;
-  background: url('https://images.unsplash.com/photo-1555992336-03a23c7b20ee') center/cover;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-align: center;
-}
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
 
-.hero h1 {
-  font-size: 2rem;
-  background: rgba(0,0,0,0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-}
+  /* HEADER */
+  header {
+    background: var(--primary);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
 
-/* BUTTONS */
-.buttons {
-  text-align: center;
-  margin: 20px;
-}
+  header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
 
-.btn {
-  display: inline-block;
-  padding: 14px 20px;
-  margin: 10px;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: bold;
-  color: white;
-}
+  /* FILTERS */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 20px;
+    justify-content: center;
+    background: white;
+    border-bottom: 1px solid #ddd;
+  }
 
-.menu-btn { background: #e63946; }
-.whatsapp-btn { background: #25D366; }
+  select, input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    flex: 1;
+    min-width: 150px;
+    max-width: 250px;
+  }
 
-/* MENU */
-#menuView {
-  display: none;
-  padding: 10px;
-}
+  /* GRID DE ACTIVIDADES */
+  .container {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: auto;
+  }
 
-.category {
-  margin-top: 20px;
-  font-weight: bold;
-  color: #e63946;
-}
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
 
-.item {
-  background: white;
-  margin-top: 10px;
-  padding: 12px;
-  border-radius: 10px;
-  animation: fadeIn 0.3s;
-}
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  }
 
-.food-img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 10px;
-}
+  .card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: #e0e0e0;
+  }
 
-.price {
-  float: right;
-  font-weight: bold;
-}
+  .card-content {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
 
-.desc {
-  font-size: 0.85rem;
-  color: #777;
-}
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 10px;
+  }
 
-/* BACK BUTTON */
-.back {
-  display: block;
-  margin: 10px;
-  text-align: center;
-  font-weight: bold;
-  cursor: pointer;
-}
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
 
-/* ANIMATION */
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(5px);}
-  to {opacity: 1; transform: translateY(0);}
-}
+  .tag {
+    background: #e1f0ff;
+    color: #2b6cb0;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+  }
+
+  .tag.age { background: #fefcbf; color: #b7791f; }
+  .tag.skill { background: #e6fffa; color: #285e61; }
+
+  .description {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    flex-grow: 1;
+  }
+
+  .materials {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+    padding: 8px;
+    border-radius: 6px;
+  }
+
+  .btn-link {
+    display: inline-block;
+    text-align: center;
+    background: var(--secondary);
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-top: auto;
+  }
+
+  .btn-link:hover {
+    background: #e67e22;
+  }
+
+  #loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: #666;
+  }
 </style>
 </head>
-
 <body>
 
-<!-- HERO -->
-<div id="homeView">
-  <div class="hero">
-    <h1 id="title">Cargando...</h1>
-  </div>
+<header>
+  <h1>📚 Ideas y Actividades Párvulos</h1>
+</header>
 
-  <div class="buttons">
-    <a class="btn menu-btn" onclick="showMenu()">🍽 Ver Menú</a>
-    <a id="waBtn" class="btn whatsapp-btn" href="#">📲 Contactar</a>
-  </div>
+<div class="filters">
+  <input type="text" id="searchInput" placeholder="Buscar actividad..." oninput="filterData()">
+  <select id="themeFilter" onchange="filterData()">
+    <option value="">Todos los Temas</option>
+  </select>
+  <select id="ageFilter" onchange="filterData()">
+    <option value="">Todas las Edades</option>
+  </select>
+  <select id="skillFilter" onchange="filterData()">
+    <option value="">Todas las Habilidades</option>
+  </select>
 </div>
 
-<!-- MENU -->
-<div id="menuView">
-  <div class="back" onclick="goHome()">⬅ Volver</div>
-  <div id="menuContent"></div>
-</div>
+<div id="loading">Cargando actividades...</div>
+<div id="activitiesGrid" class="container"></div>
 
 <script>
+// REEMPLAZA ESTA URL POR LA DE TU NUEVO GOOGLE SHEET PUBLICADO COMO CSV
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb39SKlhevlPEU-AAI6bcPdjRXsxRQrMRHp8AsLOUJ2hCh3fJkNFddg8C8tkbDgWTBFoZrh_VJjkX3/pub?output=csv";
 
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+let allActivities = [];
 
-let globalData = [];
-
-// CSV parser
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   const sep = lines[0].includes("\t") ? "\t" : ",";
@@ -143,63 +197,99 @@ function parseCSV(text) {
     let obj = {};
     headers.forEach((h,i) => obj[h] = (row[i] || "").trim());
     return obj;
-  });
+  }).filter(item => item.title); // Ignorar filas vacías
 }
 
-// Fetch data
 fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
-    const data = parseCSV(csv);
-    globalData = data.filter(r => r.id && r.id.trim() === id);
-
-    if (!globalData.length) {
-      document.body.innerHTML = "Menú no encontrado";
-      return;
-    }
-
-    init();
+    allActivities = parseCSV(csv);
+    document.getElementById("loading").style.display = "none";
+    populateFilters();
+    renderActivities(allActivities);
+  })
+  .catch(err => {
+    document.getElementById("loading").innerText = "Error cargando la base de datos.";
   });
 
-// Init page
-function init() {
-  document.getElementById("title").innerText = globalData[0].name;
+function populateFilters() {
+  const themes = new Set();
+  const ages = new Set();
+  const skills = new Set();
 
-  // WhatsApp number (put in sheet later if you want)
-  document.getElementById("waBtn").href = "https://wa.me/56912345678";
+  allActivities.forEach(act => {
+    if (act.theme) themes.add(act.theme);
+    if (act.age) ages.add(act.age);
+    if (act.skills) {
+      // Separa habilidades si vienen separadas por comas
+      act.skills.split(',').forEach(s => skills.add(s.trim()));
+    }
+  });
+
+  fillSelect("themeFilter", Array.from(themes).sort());
+  fillSelect("ageFilter", Array.from(ages).sort());
+  fillSelect("skillFilter", Array.from(skills).sort());
 }
 
-// Views
-function showMenu() {
-  document.getElementById("homeView").style.display = "none";
-  document.getElementById("menuView").style.display = "block";
-  renderMenu();
+function fillSelect(id, optionsArray) {
+  const select = document.getElementById(id);
+  optionsArray.forEach(opt => {
+    if (!opt) return;
+    const option = document.createElement("option");
+    option.value = opt;
+    option.textContent = opt;
+    select.appendChild(option);
+  });
 }
 
-function goHome() {
-  document.getElementById("menuView").style.display = "none";
-  document.getElementById("homeView").style.display = "block";
+function filterData() {
+  const searchText = document.getElementById("searchInput").value.toLowerCase();
+  const theme = document.getElementById("themeFilter").value;
+  const age = document.getElementById("ageFilter").value;
+  const skill = document.getElementById("skillFilter").value;
+
+  const filtered = allActivities.filter(act => {
+    const matchSearch = act.title.toLowerCase().includes(searchText) || act.description.toLowerCase().includes(searchText);
+    const matchTheme = theme === "" || act.theme === theme;
+    const matchAge = age === "" || act.age === age;
+    const matchSkill = skill === "" || (act.skills && act.skills.includes(skill));
+
+    return matchSearch && matchTheme && matchAge && matchSkill;
+  });
+
+  renderActivities(filtered);
 }
 
-// Render menu
-function renderMenu() {
-  const container = document.getElementById("menuContent");
+function renderActivities(data) {
+  const container = document.getElementById("activitiesGrid");
   container.innerHTML = "";
 
-  let currentCategory = "";
+  if (data.length === 0) {
+    container.innerHTML = "<p style='grid-column: 1/-1; text-align: center;'>No se encontraron actividades con estos filtros.</p>";
+    return;
+  }
 
-  globalData.forEach(i => {
-    if (i.category !== currentCategory) {
-      currentCategory = i.category;
-      container.innerHTML += `<div class="category">${currentCategory}</div>`;
-    }
+  data.forEach(act => {
+    const imgHtml = act.image ? `<img src="${act.image}" alt="${act.title}">` : '';
+    const linkHtml = act.link ? `<a href="${act.link}" target="_blank" class="btn-link">Ver material completo</a>` : '';
+    
+    // Convertir habilidades en etiquetas HTML
+    const skillsHtml = act.skills ? act.skills.split(',').map(s => `<span class="tag skill">${s.trim()}</span>`).join('') : '';
 
     container.innerHTML += `
-      <div class="item">
-        ${i.image ? `<img src="${i.image}" class="food-img">` : ""}
-        ${i.item}
-        <span class="price">$${i.price}</span><br>
-        <div class="desc">${i.description}</div>
+      <div class="card">
+        ${imgHtml}
+        <div class="card-content">
+          <div class="card-title">${act.title}</div>
+          <div class="tags">
+            ${act.theme ? `<span class="tag">${act.theme}</span>` : ''}
+            ${act.age ? `<span class="tag age">${act.age}</span>` : ''}
+            ${skillsHtml}
+          </div>
+          <div class="description">${act.description}</div>
+          ${act.materials ? `<div class="materials"><strong>Materiales:</strong> ${act.materials}</div>` : ''}
+          ${linkHtml}
+        </div>
       </div>
     `;
   });
