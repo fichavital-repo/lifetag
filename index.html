@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buscador de Actividades - Párvulos</title>
+<title>Planificación BCEP - Párvulos Valparaíso</title>
 <style>
   :root {
-    --primary: #4A90E2;
-    --secondary: #F39C12;
+    --primary: #005b96; /* Azul porteño */
+    --secondary: #e65100;
     --bg: #f4f7f6;
     --card-bg: #ffffff;
     --text: #333333;
@@ -20,6 +20,7 @@
     color: var(--text);
   }
 
+  /* HEADER */
   header {
     background: var(--primary);
     color: white;
@@ -28,11 +29,10 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 
-  header h1 {
-    margin: 0;
-    font-size: 1.8rem;
-  }
+  header h1 { margin: 0; font-size: 1.8rem; }
+  header p { margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8; }
 
+  /* FILTERS */
   .filters {
     display: flex;
     flex-wrap: wrap;
@@ -47,12 +47,13 @@
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
-    font-size: 1rem;
+    font-size: 0.95rem;
     flex: 1;
     min-width: 150px;
     max-width: 200px;
   }
 
+  /* GRID */
   .container {
     padding: 20px;
     display: grid;
@@ -72,176 +73,74 @@
     flex-direction: column;
   }
 
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-  }
+  .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+  .card img { width: 100%; height: 180px; object-fit: cover; background: #e0e0e0; }
+  .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+  .card-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
 
-  .card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    background: #e0e0e0;
-  }
-
-  .card-content {
-    padding: 15px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--primary);
-    margin-bottom: 10px;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-  }
-
-  .tag {
-    background: #e1f0ff;
-    color: #2b6cb0;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: bold;
-  }
-
+  /* TAGS */
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .tag { background: #e1f0ff; color: #2b6cb0; font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; font-weight: bold; }
   .tag.age { background: #fefcbf; color: #b7791f; }
-  .tag.skill { background: #e6fffa; color: #285e61; }
+  .tag.ambito { background: #c6f6d5; color: #22543d; }
   .tag.festivity { background: #fed7e2; color: #97266d; }
 
-  .description {
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-    flex-grow: 1;
-  }
+  .description { font-size: 0.9rem; margin-bottom: 15px; flex-grow: 1; color: #555; }
 
   .btn-link {
-    display: block;
-    text-align: center;
-    background: var(--secondary);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    margin-top: auto;
-    cursor: pointer;
-    font-size: 1rem;
-    width: 100%;
-    box-sizing: border-box;
+    display: block; text-align: center; background: var(--secondary); color: white;
+    border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;
+    font-size: 1rem; width: 100%;
   }
+  .btn-link:hover { background: #cc4800; }
 
-  .btn-link:hover {
-    background: #e67e22;
-  }
-
+  /* VISTA DETALLADA */
   #detailView {
-    display: none;
-    max-width: 800px;
-    margin: 40px auto;
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: none; max-width: 800px; margin: 40px auto; background: white;
+    padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   }
 
   .back-btn {
-    background: #eee;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #555;
+    background: #eee; border: none; padding: 10px 20px; border-radius: 8px;
+    cursor: pointer; font-weight: bold; margin-bottom: 20px; color: #555;
   }
-
   .back-btn:hover { background: #ddd; }
 
-  .detail-image {
-    width: 100%;
-    max-height: 400px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    background: #f0f0f0;
-  }
-
-  .detail-section {
-    margin-bottom: 25px;
-  }
-
-  .detail-section h3 {
-    color: var(--primary);
-    border-bottom: 2px solid #eee;
-    padding-bottom: 5px;
-    margin-bottom: 15px;
-  }
-
-  .detail-section p {
-    line-height: 1.6;
-    color: #444;
-    white-space: pre-wrap;
-  }
-
-  .materials-box {
-    background: #fff3cd;
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 5px solid #ffc107;
-    margin-bottom: 25px;
-  }
-
-  #loading {
-    text-align: center;
-    padding: 50px;
-    font-size: 1.2rem;
-    color: #666;
-  }
+  .detail-image { width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; }
+  .detail-section { margin-bottom: 25px; }
+  .detail-section h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 15px; }
+  .detail-section p { line-height: 1.6; color: #444; white-space: pre-wrap; }
+  .materials-box { background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin-bottom: 25px; }
+  #loading { text-align: center; padding: 50px; font-size: 1.2rem; color: #666; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>📚 Ideas y Actividades Párvulos</h1>
+  <h1>⚓ Base de Actividades BCEP</h1>
+  <p>Educación Parvularia - Valparaíso</p>
 </header>
 
 <div id="mainView">
   <div class="filters">
     <input type="text" id="searchInput" placeholder="Buscar actividad..." oninput="filterData()">
-    <select id="themeFilter" onchange="filterData()">
-      <option value="">Todos los Temas</option>
-    </select>
-    <select id="ageFilter" onchange="filterData()">
-      <option value="">Todas las Edades</option>
-    </select>
-    <select id="skillFilter" onchange="filterData()">
-      <option value="">Todas las Habilidades</option>
-    </select>
-    <select id="festivityFilter" onchange="filterData()">
-      <option value="">Todas las Fechas / Festividades</option>
-    </select>
+    <select id="ambitoFilter" onchange="filterData()"><option value="">Todos los Ámbitos BCEP</option></select>
+    <select id="themeFilter" onchange="filterData()"><option value="">Todos los Temas</option></select>
+    <select id="ageFilter" onchange="filterData()"><option value="">Todas las Edades</option></select>
+    <select id="festivityFilter" onchange="filterData()"><option value="">Fechas Especiales</option></select>
   </div>
 
-  <div id="loading">Cargando actividades...</div>
+  <div id="loading">Cargando base de datos...</div>
   <div id="activitiesGrid" class="container"></div>
 </div>
 
 <div id="detailView">
-  <button class="back-btn" onclick="hideDetail()">⬅ Volver a las actividades</button>
+  <button class="back-btn" onclick="hideDetail()">⬅ Volver</button>
   <div id="detailContent"></div>
 </div>
 
 <script>
+// REEMPLAZA CON TU URL
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb39SKlhevlPEU-AAI6bcPdjRXsxRQrMRHp8AsLOUJ2hCh3fJkNFddg8C8tkbDgWTBFoZrh_VJjkX3/pub?output=csv";
 
 let allActivities = [];
@@ -254,41 +153,32 @@ function parseCSV(text) {
     if(row) {
         rows.push(row.map(cell => {
             let clean = cell.trim();
-            if (clean.startsWith('"') && clean.endsWith('"')) {
-                clean = clean.slice(1, -1);
-            }
+            if (clean.startsWith('"') && clean.endsWith('"')) clean = clean.slice(1, -1);
             return clean;
         }));
     }
   }
 
   const headers = rows[0].map(h => h.toLowerCase());
+  const seenIds = new Set(); // Para evitar repeticiones
 
-  return rows.slice(1).map(row => {
+  return rows.slice(1).reduce((acc, row) => {
     let obj = {};
     headers.forEach((h,i) => obj[h] = (row[i] || "").trim());
-    return obj;
-  }).filter(item => item.title);
+    
+    // Ignorar vacíos y eliminar duplicados exactos por ID
+    if (obj.title && obj.id && !seenIds.has(obj.id)) {
+      seenIds.add(obj.id);
+      acc.push(obj);
+    }
+    return acc;
+  }, []);
 }
 
 fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
-    const rawActivities = parseCSV(csv);
-    
-    // FILTRO ANTIDUPLICADOS: Elimina filas con el mismo ID
-    const uniqueActivities = [];
-    const seenIds = new Set();
-    
-    for (const act of rawActivities) {
-      if (!seenIds.has(act.id)) {
-        seenIds.add(act.id);
-        uniqueActivities.push(act);
-      }
-    }
-    
-    allActivities = uniqueActivities;
-    
+    allActivities = parseCSV(csv);
     document.getElementById("loading").style.display = "none";
     populateFilters();
     renderActivities(allActivities);
@@ -299,25 +189,18 @@ fetch(sheetURL)
   });
 
 function populateFilters() {
-  const themes = new Set();
-  const ages = new Set();
-  const skills = new Set();
-  const festivities = new Set();
+  const ambitos = new Set(), themes = new Set(), ages = new Set(), festivities = new Set();
 
   allActivities.forEach(act => {
+    if (act.ambito) ambitos.add(act.ambito);
     if (act.theme) themes.add(act.theme);
     if (act.age) ages.add(act.age);
-    if (act.skills) {
-      act.skills.split(',').forEach(s => skills.add(s.trim()));
-    }
-    if (act.festivity && act.festivity.toLowerCase() !== "ninguna" && act.festivity.trim() !== "") {
-      festivities.add(act.festivity);
-    }
+    if (act.festivity && act.festivity.toLowerCase() !== "ninguna") festivities.add(act.festivity);
   });
 
+  fillSelect("ambitoFilter", Array.from(ambitos).sort());
   fillSelect("themeFilter", Array.from(themes).sort());
   fillSelect("ageFilter", Array.from(ages).sort());
-  fillSelect("skillFilter", Array.from(skills).sort());
   fillSelect("festivityFilter", Array.from(festivities).sort());
 }
 
@@ -333,20 +216,20 @@ function fillSelect(id, optionsArray) {
 }
 
 function filterData() {
-  const searchText = document.getElementById("searchInput").value.toLowerCase();
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const ambito = document.getElementById("ambitoFilter").value;
   const theme = document.getElementById("themeFilter").value;
   const age = document.getElementById("ageFilter").value;
-  const skill = document.getElementById("skillFilter").value;
   const festivity = document.getElementById("festivityFilter").value;
 
   const filtered = allActivities.filter(act => {
-    const matchSearch = act.title.toLowerCase().includes(searchText) || act.description.toLowerCase().includes(searchText);
-    const matchTheme = theme === "" || act.theme === theme;
-    const matchAge = age === "" || act.age === age;
-    const matchSkill = skill === "" || (act.skills && act.skills.includes(skill));
-    const matchFestivity = festivity === "" || act.festivity === festivity;
+    const mSearch = act.title.toLowerCase().includes(search) || act.description.toLowerCase().includes(search);
+    const mAmbito = ambito === "" || act.ambito === ambito;
+    const mTheme = theme === "" || act.theme === theme;
+    const mAge = age === "" || act.age === age;
+    const mFestivity = festivity === "" || act.festivity === festivity;
 
-    return matchSearch && matchTheme && matchAge && matchSkill && matchFestivity;
+    return mSearch && mAmbito && mTheme && mAge && mFestivity;
   });
 
   renderActivities(filtered);
@@ -362,10 +245,10 @@ function renderActivities(data) {
   }
 
   data.forEach(act => {
-    const imgHtml = act.image ? `<img src="${act.image}" alt="${act.title}" loading="lazy">` : '';
-    const skillsHtml = act.skills ? act.skills.split(',').map(s => `<span class="tag skill">${s.trim()}</span>`).join('') : '';
-    const festivityHtml = (act.festivity && act.festivity.toLowerCase() !== "ninguna" && act.festivity.trim() !== "") 
+    const imgHtml = act.image ? `<img src="${act.image}" loading="lazy">` : '';
+    const festivityHtml = (act.festivity && act.festivity.toLowerCase() !== "ninguna") 
                           ? `<span class="tag festivity">🎉 ${act.festivity}</span>` : '';
+    const ambitoHtml = act.ambito ? `<span class="tag ambito">📚 ${act.ambito}</span>` : '';
 
     container.innerHTML += `
       <div class="card">
@@ -373,13 +256,13 @@ function renderActivities(data) {
         <div class="card-content">
           <div class="card-title">${act.title}</div>
           <div class="tags">
+            ${ambitoHtml}
             ${act.theme ? `<span class="tag">${act.theme}</span>` : ''}
             ${act.age ? `<span class="tag age">${act.age}</span>` : ''}
             ${festivityHtml}
-            ${skillsHtml}
           </div>
           <div class="description">${act.description}</div>
-          <button class="btn-link" onclick="showDetail('${act.id}')">Ver material completo</button>
+          <button class="btn-link" onclick="showDetail('${act.id}')">Ver planificación completa</button>
         </div>
       </div>
     `;
@@ -390,20 +273,46 @@ function showDetail(id) {
   const act = allActivities.find(a => a.id === id);
   if (!act) return;
 
-  const detailContent = document.getElementById("detailContent");
-  
-  const imgHtml = act.image ? `<img src="${act.image}" class="detail-image" alt="${act.title}">` : '';
-  const steps = act.steps ? act.steps : "Instrucciones no disponibles.";
-  const benefits = act.benefits ? act.benefits : "Beneficios no disponibles.";
-  const festivityHtml = (act.festivity && act.festivity.toLowerCase() !== "ninguna" && act.festivity.trim() !== "") 
+  const detail = document.getElementById("detailContent");
+  const imgHtml = act.image ? `<img src="${act.image}" class="detail-image">` : '';
+  const festivityHtml = (act.festivity && act.festivity.toLowerCase() !== "ninguna") 
                           ? `<span class="tag festivity">🎉 ${act.festivity}</span>` : '';
   
-  detailContent.innerHTML = `
+  detail.innerHTML = `
     ${imgHtml}
     <h2 style="color: var(--primary); margin-top: 0;">${act.title}</h2>
     
     <div class="tags" style="margin-bottom: 20px;">
+      ${act.ambito ? `<span class="tag ambito">📚 Ámbito: ${act.ambito}</span>` : ''}
       ${act.theme ? `<span class="tag">${act.theme}</span>` : ''}
-      ${act.age ? `<span class="tag age">${act.age}</span>` : ''}
+      ${act.age ? `<span class="tag age">👶 ${act.age}</span>` : ''}
       ${festivityHtml}
-      ${act.skills ? act.skills.split(',').map(s => `<span
+    </div>
+
+    ${act.skills ? `<p><strong>🎯 Habilidades:</strong> ${act.skills}</p>` : ''}
+    ${act.materials ? `<div class="materials-box"><strong>✂️ Recursos / Materiales:</strong><br>${act.materials}</div>` : ''}
+
+    <div class="detail-section">
+      <h3>📝 Experiencia de Aprendizaje (Paso a Paso)</h3>
+      <p>${act.steps || "Sin instrucciones."}</p>
+    </div>
+
+    <div class="detail-section">
+      <h3>🧠 Propósito y Beneficios</h3>
+      <p>${act.benefits || "Sin beneficios documentados."}</p>
+    </div>
+  `;
+
+  document.getElementById("mainView").style.display = "none";
+  document.getElementById("detailView").style.display = "block";
+  window.scrollTo(0, 0);
+}
+
+function hideDetail() {
+  document.getElementById("detailView").style.display = "none";
+  document.getElementById("mainView").style.display = "block";
+}
+</script>
+
+</body>
+</html>
