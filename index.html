@@ -52,7 +52,7 @@
     font-size: 1rem;
     flex: 1;
     min-width: 150px;
-    max-width: 250px;
+    max-width: 200px;
   }
 
   /* GRID DE ACTIVIDADES */
@@ -119,6 +119,7 @@
 
   .tag.age { background: #fefcbf; color: #b7791f; }
   .tag.skill { background: #e6fffa; color: #285e61; }
+  .tag.festivity { background: #fed7e2; color: #97266d; } /* Color para festividades */
 
   .description {
     font-size: 0.9rem;
@@ -193,7 +194,7 @@
   .detail-section p {
     line-height: 1.6;
     color: #444;
-    white-space: pre-wrap; /* Respeta los saltos de línea del excel */
+    white-space: pre-wrap;
   }
 
   .materials-box {
@@ -230,6 +231,9 @@
     <select id="skillFilter" onchange="filterData()">
       <option value="">Todas las Habilidades</option>
     </select>
+    <select id="festivityFilter" onchange="filterData()">
+      <option value="">Todas las Fechas / Festividades</option>
+    </select>
   </div>
 
   <div id="loading">Cargando actividades...</div>
@@ -249,10 +253,8 @@ let allActivities = [];
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
-  // Detectar separador, manejar comillas en CSV básico
   const rows = [];
   for (let i = 0; i < lines.length; i++) {
-    // Regex para separar por comas respetando comillas
     const row = lines[i].match(/(?:\"([^\"]*)\")|([^\,]+)/g); 
     if(row) {
         rows.push(row.map(cell => {
@@ -291,6 +293,7 @@ function populateFilters() {
   const themes = new Set();
   const ages = new Set();
   const skills = new Set();
+  const festivities = new Set();
 
   allActivities.forEach(act => {
     if (act.theme) themes.add(act.theme);
@@ -298,11 +301,15 @@ function populateFilters() {
     if (act.skills) {
       act.skills.split(',').forEach(s => skills.add(s.trim()));
     }
+    if (act.festivity && act.festivity.toLowerCase() !== "ninguna" && act.festivity.trim() !== "") {
+      festivities.add(act.festivity);
+    }
   });
 
   fillSelect("themeFilter", Array.from(themes).sort());
   fillSelect("ageFilter", Array.from(ages).sort());
   fillSelect("skillFilter", Array.from(skills).sort());
+  fillSelect("festivityFilter", Array.from(festivities).sort());
 }
 
 function fillSelect(id, optionsArray) {
@@ -321,14 +328,18 @@ function filterData() {
   const theme = document.getElementById("themeFilter").value;
   const age = document.getElementById("ageFilter").value;
   const skill = document.getElementById("skillFilter").value;
+  const festivity = document.getElementById("festivityFilter").value;
 
   const filtered = allActivities.filter(act => {
     const matchSearch = act.title.toLowerCase().includes(searchText) || act.description.toLowerCase().includes(searchText);
     const matchTheme = theme === "" || act.theme === theme;
     const matchAge = age === "" || act.age === age;
     const matchSkill = skill === "" || (act.skills && act.skills.includes(skill));
+    
+    // Lógica para festividades: si el filtro está vacío, muestra todas. Si tiene valor, debe coincidir.
+    const matchFestivity = festivity === "" || act.festivity === festivity;
 
-    return matchSearch && matchTheme && matchAge && matchSkill;
+    return matchSearch && matchTheme && matchAge && matchSkill && matchFestivity;
   });
 
   renderActivities(filtered);
@@ -346,6 +357,8 @@ function renderActivities(data) {
   data.forEach(act => {
     const imgHtml = act.image ? `<img src="${act.image}" alt="${act.title}" loading="lazy">` : '';
     const skillsHtml = act.skills ? act.skills.split(',').map(s => `<span class="tag skill">${s.trim()}</span>`).join('') : '';
+    const festivityHtml = (act.festivity && act.festivity.toLowerCase() !== "ninguna" && act.festivity.trim() !== "") 
+                          ? `<span class="tag festivity">🎉 ${act.festivity}</span>` : '';
 
     container.innerHTML += `
       <div class="card">
@@ -355,6 +368,7 @@ function renderActivities(data) {
           <div class="tags">
             ${act.theme ? `<span class="tag">${act.theme}</span>` : ''}
             ${act.age ? `<span class="tag age">${act.age}</span>` : ''}
+            ${festivityHtml}
             ${skillsHtml}
           </div>
           <div class="description">${act.description}</div>
@@ -365,17 +379,17 @@ function renderActivities(data) {
   });
 }
 
-// Lógica de Vistas (Single Page Application)
 function showDetail(id) {
   const act = allActivities.find(a => a.id === id);
   if (!act) return;
 
   const detailContent = document.getElementById("detailContent");
   
-  // Procesar saltos de línea y formateo si es necesario
   const imgHtml = act.image ? `<img src="${act.image}" class="detail-image" alt="${act.title}">` : '';
   const steps = act.steps ? act.steps : "Instrucciones no disponibles.";
   const benefits = act.benefits ? act.benefits : "Beneficios no disponibles.";
+  const festivityHtml = (act.festivity && act.festivity.toLowerCase() !== "ninguna" && act.festivity.trim() !== "") 
+                          ? `<span class="tag festivity">🎉 ${act.festivity}</span>` : '';
   
   detailContent.innerHTML = `
     ${imgHtml}
@@ -384,6 +398,7 @@ function showDetail(id) {
     <div class="tags" style="margin-bottom: 20px;">
       ${act.theme ? `<span class="tag">${act.theme}</span>` : ''}
       ${act.age ? `<span class="tag age">${act.age}</span>` : ''}
+      ${festivityHtml}
       ${act.skills ? act.skills.split(',').map(s => `<span class="tag skill">${s.trim()}</span>`).join('') : ''}
     </div>
 
@@ -402,7 +417,7 @@ function showDetail(id) {
 
   document.getElementById("mainView").style.display = "none";
   document.getElementById("detailView").style.display = "block";
-  window.scrollTo(0, 0); // Sube al inicio de la página
+  window.scrollTo(0, 0);
 }
 
 function hideDetail() {
